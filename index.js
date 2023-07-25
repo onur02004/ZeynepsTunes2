@@ -100,7 +100,7 @@ io.on('connection', (socket) => {
     socket.on('SoruCevaplama', (ms) => {
         console.log("Birisi Soru Cevapladi. Soru No: " + ms.SoruIndex + "=>" + ms.DogruCevapladi + " Sayisi:" + ms.DogruYaniSayisi);
         
-        socket.emit("SoruCevaplama", ms);
+        io.emit("SoruCevaplama", ms);
 
         
             

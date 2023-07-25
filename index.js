@@ -113,7 +113,8 @@ io.on('connection', (socket) => {
         io.emit("BeklemeOdasi_Mesaj", {GonderenIsim: "Sunucu", MesajIcerik:ms.MesajIcerik, Admin:false, FotoAdi:ms.FotoAdi});
         
         //UNUTMA BURA
-        if(hazir_user_count == users.length && users.length > 1){   
+        if(hazir_user_count > 1){   
+            //if(hazir_user_count == users.length && users.length > 1){   
             selectRandomLines(filePath, numLinesToSelect)
         .then((selectedLines) => {
             console.log('Selected random lines:');

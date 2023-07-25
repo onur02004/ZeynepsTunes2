@@ -98,9 +98,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('SoruCevaplama', (ms) => {
-        console.log("Birisi Soru Cevapladi. Soru No: " + ms.SoruIndex + "=>" + ms.DogruCevapladi);
+        console.log("Birisi Soru Cevapladi. Soru No: " + ms.SoruIndex + "=>" + ms.DogruCevapladi + " Sayisi:" + ms.DogruYaniSayisi);
         
-        io.emit("SoruCevaplama", ms);
+        socket.emit("SoruCevaplama", ms);
 
         
             
@@ -113,7 +113,7 @@ io.on('connection', (socket) => {
         io.emit("BeklemeOdasi_Mesaj", {GonderenIsim: "Sunucu", MesajIcerik:ms.MesajIcerik, Admin:false, FotoAdi:ms.FotoAdi});
         
         //UNUTMA BURA
-        //if(hazir_user_count == users.length && users.length > 1)    
+        if(hazir_user_count == users.length && users.length > 1){   
             selectRandomLines(filePath, numLinesToSelect)
         .then((selectedLines) => {
             console.log('Selected random lines:');
@@ -125,6 +125,7 @@ io.on('connection', (socket) => {
           console.error('Error:', err);
           });
           console.log("Oyun BASLADI!");
+        }
     });
 
     socket.on('BeklemeOdasi_HazirOlma', (ms) => {
@@ -190,4 +191,4 @@ function shuffleArray(array) {
   const filePath = path.join(currentDirectory, 'filenames_without_extension.txt');
   
   // Number of lines to select
-  const numLinesToSelect = 7;
+  const numLinesToSelect = 10;

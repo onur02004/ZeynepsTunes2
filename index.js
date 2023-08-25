@@ -9,7 +9,7 @@ const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
 
-print("YENI VERSIYON");
+console.log("YENI VERSIYON");
 
 app.use(express.static('public'));
 

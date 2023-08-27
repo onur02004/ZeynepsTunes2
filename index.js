@@ -9,7 +9,7 @@ const readline = require('readline');
 const fs = require('fs');
 const path = require('path');
 
-console.log("YENI VERSIYON");
+console.log("YENI VERSIYON V1");
 
 app.use(express.static('public'));
 
@@ -20,6 +20,21 @@ app.get('/', (req, res) => {
 
 const connectedUsers = [];
 let InGame;
+
+class OyunAyarlari {
+  constructor() {
+      this.SarkiDilKarisik = true;
+      this.SarkiDilTurkce = false;
+      this.SarkiDilYabanci = false;
+      this.SoruTuruSarkici = false;
+      this.SoruTuruSarki = true;
+      this.SoruSayisi = 10;
+      this.CevapSayisi = 4;
+  }
+}
+
+const OYUNAYARLARI = new OyunAyarlari();
+
 
 class User {
   constructor(userName, imageName, socketId, isReady) {
@@ -49,6 +64,7 @@ io.on('connection', (socket) => {
     console.log("Baglanan Kullanici Adi:" + userData.userName + " Foto Adi:" + userData.imageName);
 
     io.emit('userList', (connectedUsers));
+    io.emit('oyunAyarlari', (OYUNAYARLARI));
 
     const countReadyUsers = connectedUsers.reduce((count, user) => {
       if (user.isReady) {
@@ -68,6 +84,7 @@ io.on('connection', (socket) => {
       connectedUsers.splice(indexToRemove, 1);
     }
     io.emit('userList', (connectedUsers));
+    io.emit('oyunAyarlari', (OYUNAYARLARI));
 
 
 
@@ -82,6 +99,7 @@ io.on('connection', (socket) => {
 
   socket.on('Hazir_Olma', (userData) => {
     console.log("Birisi Durumu Degisti:" + userData.userName + "=>" + userData.isReady);
+    io.emit('oyunAyarlari', (OYUNAYARLARI));
 
     connectedUsers.forEach(user => {
       if (user.socketId === userData.socketId) {
@@ -96,6 +114,7 @@ io.on('connection', (socket) => {
       return count;
     }, 0);
     console.log("Hazir Olma Sayisi:" + countReadyUsers);
+    numLinesToSelect = OYUNAYARLARI.SoruSayisi;
 
     if(countReadyUsers === connectedUsers.length){
         //Oyunu baslat
@@ -118,11 +137,23 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('oyunAyarlarDEGISME', (userData) => {
 
+    console.log("Ayarlar Degisti=>" + userData);
+    OYUNAYARLARI.SarkiDilKarisik = userData.SarkiDilKarisik;
+    OYUNAYARLARI.SarkiDilTurkce = userData.SarkiDilTurkce;
+    OYUNAYARLARI.SarkiDilYabanci = userData.SarkiDilYabanci;
+    OYUNAYARLARI.SoruTuruSarkici = userData.SoruTuruSarkici;
+    OYUNAYARLARI.SoruTuruSarki = userData.SoruTuruSarki;
+    OYUNAYARLARI.SoruSayisi = userData.SoruSayisi;
+    OYUNAYARLARI.CevapSayisi = userData.CevapSayisi;
+    numLinesToSelect = OYUNAYARLARI.SoruSayisi;
+    io.emit('oyunAyarlari', (OYUNAYARLARI));
+  });
 
   socket.on('disconnect', () => {
     console.log('A user disconnected');
-    // Remove user from the array on disconnect
+    io.emit('oyunAyarlari', (OYUNAYARLARI));
     const disconnectedUser = connectedUsers.find(user => user.socketId === socket.id);
     if (disconnectedUser) {
       connectedUsers.splice(connectedUsers.indexOf(disconnectedUser), 1);
@@ -161,6 +192,17 @@ server.listen(PORT, () => {
   // Function to select random lines from a file
   function selectRandomLines(filePath, numLines) {
     return new Promise((resolve, reject) => {
+      if(OYUNAYARLARI.SarkiDilTurkce){
+        filePath = path.join(currentDirectory, 'filenames_without_extension_tr.txt');
+        console.log("sarkilar TURKCE dil");
+      }else if(OYUNAYARLARI.SarkiDilYabanci){
+        console.log("sarkilar YABANCI dil");
+        filePath = path.join(currentDirectory, 'filenames_without_extension_ing.txt');
+      }else if(OYUNAYARLARI.SarkiDilKarisik){
+        let filePath = path.join(currentDirectory, 'filenames_without_extension.txt');
+        console.log("sarkilar KARISIK dil");
+      }
+
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
           return reject(err);
@@ -188,7 +230,7 @@ server.listen(PORT, () => {
   const currentDirectory = __dirname;
   
   // Construct the file path
-  const filePath = path.join(currentDirectory, 'filenames_without_extension.txt');
+  let filePath = path.join(currentDirectory, 'filenames_without_extension.txt');
   
   // Number of lines to select
-  const numLinesToSelect = 10;
+  let numLinesToSelect = 10;
